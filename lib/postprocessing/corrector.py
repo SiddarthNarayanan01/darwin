@@ -1,6 +1,7 @@
-from sampling.sampler import Sampler
-from sampling.backend import Backend
-from postprocessing.parser import RegExParser
+from lib.sampling.sampler import Sampler
+from lib.sampling.backend import Backend
+from lib.postprocessing.parser import RegExParser
+
 
 
 class Corrector(Sampler):
