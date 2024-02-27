@@ -3,13 +3,12 @@ from lib.sampling.sampler import Sampler
 
 
 sampler = Sampler(
-    backend="llamacpp",
+    backend="ollama",
     model_name=Models.DEEPSEEK_MATH,
-    model_weights_path="./model_weights/deepseek-coder-6.7b-instruct.Q5_K_M.gguf",
+    ollama_server_address="http://127.0.0.1:11434"
 )
 
-print(
-    sampler.prompt(
-        "What is 16 choose 2 and what is a quick mathematical trick that can be used to solve this?"
-    )
-)
+prompt = r"""
+"""
+
+sampler.sample(prompt, print)

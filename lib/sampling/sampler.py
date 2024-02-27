@@ -1,5 +1,6 @@
-from typing import Literal
+from typing import Any, Callable, Literal
 from lib.sampling.backends.llamacpp import LlamaCPPBackend
+from lib.sampling.backends.ollama import OllamaBackend
 from lib.sampling.models import Models
 
 
@@ -22,7 +23,14 @@ class Sampler:
                     model_name=model_name,
                 )
             case "ollama":
-                raise NotImplementedError()
+                if "ollama_server_address" not in kwargs:
+                    raise ValueError(
+                        "Using OllamaBackend but not server address was given. Please supply the ollama_server_address keyword argument"
+                    )
+                self.backend = OllamaBackend(
+                    server_address=kwargs["ollama_server_address"],
+                    model_name=model_name,
+                )
             case "groq":
                 raise NotImplementedError()
             case _:
@@ -31,5 +39,5 @@ class Sampler:
                 )
         self.prompt_supplement = prompt_supplement
 
-    def prompt(self, prompt: str) -> str:
-        return self.backend.prompt(f"{self.prompt_supplement}\n\n{prompt}")
+    def sample(self, prompt: str, callback: Callable[[str], Any]):
+        callback(self.backend.prompt(f"{self.prompt_supplement}\n\n{prompt}"))
