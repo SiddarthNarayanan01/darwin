@@ -1,10 +1,6 @@
-import json
 from lib.sampling.models import Models
 from lib.sampling.sampler import Sampler
 from threading import Thread
-import requests
-import time
-import multiprocessing
 
 
 sampler = Sampler(
@@ -30,14 +26,16 @@ Hello! Who are you?
 #     pool = multiprocessing.Pool(processes=8)
 #     pool.map(process, [prompt for _ in range(8)])
 
-def sample(sampler, prompt, callback):
-    sampler.sample(prompt, callback)
+
+def sample(sampler, prompt):
+    print(sampler.sample(prompt))
+
 
 threads = [
-    Thread(target=sample, args=(sampler, prompt, print)),
-    Thread(target=sample, args=(sampler, prompt, print)),
-    Thread(target=sample, args=(sampler, prompt, print)),
-    Thread(target=sample, args=(sampler, prompt, print)),
+    Thread(target=sample, args=(sampler, prompt)),
+    Thread(target=sample, args=(sampler, prompt)),
+    Thread(target=sample, args=(sampler, prompt)),
+    Thread(target=sample, args=(sampler, prompt)),
 ]
 
 for i, t in enumerate(threads):

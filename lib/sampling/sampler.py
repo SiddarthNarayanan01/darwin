@@ -39,5 +39,5 @@ class Sampler:
                 )
         self.prompt_supplement = prompt_supplement
 
-    def sample(self, prompt: str, callback: Callable[[str], Any]):
-        callback(self.backend.prompt(f"{self.prompt_supplement}\n\n{prompt}"))
+    def sample(self, prompt: str) -> str:
+        return self.backend.prompt(f"{self.prompt_supplement}\n\n{prompt}")
