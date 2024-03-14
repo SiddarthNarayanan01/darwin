@@ -12,3 +12,4 @@ class RegExParser:
             except:
                 return code
         return code
+

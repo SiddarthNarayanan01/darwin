@@ -22,4 +22,3 @@ class Corrector(Sampler):
         return RegExParser.parse(
             self.backend.prompt(f"{self.prompt_supplement}\n\n{sample}")
         )
-
