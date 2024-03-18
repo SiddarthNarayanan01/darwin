@@ -1,7 +1,7 @@
 from typing import Literal
-from lib.sampling.models import Models
-from lib.sampling.sampler import Sampler
-from lib.postprocessing.parser import RegExParser
+from darwin.sampling.models import Models
+from darwin.sampling.sampler import Sampler
+from darwin.postprocessing.parser import RegExParser
 
 
 class Corrector(Sampler):

@@ -1,7 +1,7 @@
 from typing import Any, Callable, Literal
-from lib.sampling.backends.llamacpp import LlamaCPPBackend
-from lib.sampling.backends.ollama import OllamaBackend
-from lib.sampling.models import Models
+from darwin.sampling.backends.llamacpp import LlamaCPPBackend
+from darwin.sampling.backends.ollama import OllamaBackend
+from darwin.sampling.models import Models
 
 
 class Sampler:

@@ -1,15 +1,15 @@
 import numpy as np
 from scipy.special import softmax
 
-from lib.evolving.samples import Sample
-from lib.evolving.clusters import Cluster
+from darwin.evolving.samples import Sample
+from darwin.evolving.clusters import Cluster
 
 
 class Island:
     def __init__(
         self,
         max_version: int,
-        cluster_temperature: int,
+        cluster_temperature: float,
         cluster_temperature_period: int,
     ) -> None:
         self.max_version = max_version
@@ -24,7 +24,7 @@ class Island:
     def register_sample(self, sample: Sample) -> None:
         score = sample.score
         if score not in self.clusters:
-            self.clusters[score] = Cluster(...)  # TODO:: Implement this
+            self.clusters[score] = Cluster(sample=sample)
         else:
             self.clusters[score].register_sample(sample)
 
@@ -41,7 +41,7 @@ class Island:
 
         versions = min(len(self.clusters), self.max_version)
 
-        scores = np.random.choice(len(scores), size=versions, p=p)
+        scores = np.random.choice(scores, size=versions, p=p)
         scores = np.sort(scores)
 
         implementations = [self.clusters[score].get_sample() for score in scores]

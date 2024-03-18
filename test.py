@@ -1,5 +1,5 @@
-from lib.sampling.models import Models
-from lib.sampling.sampler import Sampler
+from darwin.sampling.models import Models
+from darwin.sampling.sampler import Sampler
 from threading import Thread
 
 

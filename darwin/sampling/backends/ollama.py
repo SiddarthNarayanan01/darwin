@@ -1,7 +1,7 @@
 import requests
 import json
-from lib.sampling.backend import Backend
-from lib.sampling.models import Models
+from darwin.sampling.backend import Backend
+from darwin.sampling.models import Models
 
 
 class OllamaBackend(Backend):

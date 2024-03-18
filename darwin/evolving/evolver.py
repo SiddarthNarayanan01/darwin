@@ -2,16 +2,16 @@ import time
 import numpy as np
 from scipy.special import softmax
 
-from lib.evolving.islands import Island
-from lib.evolving.samples import Sample
+from darwin.evolving.islands import Island
+from darwin.evolving.samples import Sample
 
 # All the config stuff should be made in the config file
-from lib.configuration.configuration import DBConfig
+from darwin.configuration.configuration import EvolverConfig
 
 
 class Evolver:
-    def __init__(self, config: DBConfig) -> None:
-        self.config: DBConfig = config
+    def __init__(self, config: EvolverConfig) -> None:
+        self.config: EvolverConfig = config
         self.islands: list[Island] = []
         for _ in range(self.config.num_islands):
             self.islands.append(
@@ -28,9 +28,9 @@ class Evolver:
         self.last_reset = time.time()
         self.migration_counter_per_island: list[int] = [0] * config.num_islands
 
-    def get_sample(self) -> Sample:
+    def get_sample(self) -> tuple[Sample, int]:
         island_id = np.random.randint(self.config.num_islands)
-        chosen: Sample = self.islands[island_id].get_sample()
+        chosen: tuple[Sample, int] = self.islands[island_id].get_sample()
         return chosen
 
     def register_sample(
@@ -59,7 +59,7 @@ class Evolver:
         if self.migration_counter_per_island[island_id] >= self.config.migration_rate:
             self.migrate_islands(island_id)
 
-        if time.time() - self.last_reset > self.config.island_duration:
+        if time.time() - self.last_reset > self.config.reset_period:
             self.last_reset = time.time()
             self.reset_islands()
 
@@ -76,17 +76,14 @@ class Evolver:
 
         for idx in reset_islands:
             self.islands[idx] = Island(
-                Island(
-                    self.function_to_evolve,
-                    self.config.max_versions,
-                    self.config.init_temperature,
-                    self.config.temperature_period,
-                )
+                self.config.max_versions,
+                self.config.init_temperature,
+                self.config.temperature_period,
             )
-            self.best_sample_per_island = None
-            self.worst_sample_per_island = None
+            self.best_sample_per_island[idx] = None
+            self.worst_sample_per_island[idx] = None
             founder_id = np.random.choice(kept_islands)
-            founder = kept_islands[founder_id]
+            founder = self.best_sample_per_island[founder_id]
             self.register_sample(founder, [founder.score], idx)
 
     def migrate_islands(self, from_island_id) -> None:

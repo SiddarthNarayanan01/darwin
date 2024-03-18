@@ -1,7 +1,7 @@
 from pathlib import Path
 from llama_cpp import Llama
-from lib.sampling.backend import Backend
-from lib.sampling.models import Models
+from darwin.sampling.backend import Backend
+from darwin.sampling.models import Models
 
 
 class LlamaCPPBackend(Backend):
