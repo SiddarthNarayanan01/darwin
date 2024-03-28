@@ -2,7 +2,5 @@ from enum import Enum
 
 
 class Models(Enum):
-    DEEPSEEK_MATH = 1
-    DEEPSEEK_CODER = 2
-    STARCODER = 3
-    GEMMA=4
+    dsc67 = "deepseek-coder:6.7b-instruct"
+    gemma = "gemma:7b"
