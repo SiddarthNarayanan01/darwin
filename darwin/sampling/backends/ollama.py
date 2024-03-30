@@ -1,39 +1,32 @@
-import requests
 import json
+import aiohttp
+
+# import json
 from darwin.sampling.backend import Backend
-from darwin.sampling.models import Models
+from darwin.sampling.models import ModelType
 
 
 class OllamaBackend(Backend):
-    def __init__(self, server_address: str, model: Models) -> None:
+    def __init__(self, server_address: str, model: ModelType) -> None:
         super().__init__()
         self.server_address = server_address
         self.model = model.value
 
-    def prompt(self, prompt: str) -> str:
+    async def prompt(self, prompt: str) -> str:
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
         }
         data = {
             "model": self.model,
             "prompt": prompt,
+            "stream": False
         }
-        try:
-            response = requests.post(
-                f"{self.server_address}/api/generate", headers=headers, data=json.dumps(data), timeout=10
-            )
-        except requests.exceptions.Timeout:
-            print("Timeout Error: ollama did not respond within 10 seconds")
-            return ""
-            # TODO: Should be logging here
-
-        try:
-            responses = response.text.split("\n")[:-1]
-            response = ""
-            for r in responses:
-                response += json.loads(r)["response"]
-            return response
-        except:
-            print(f"Error parsing ollama response object. \nOllama: {response}")
-            return ""
-            # TODO: Should be logging here
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                f"{self.server_address}/api/generate",
+                data=json.dumps(data),
+                headers=headers,
+            ) as response:
+                response = await response.json()
+                result = response["response"]
+                return result

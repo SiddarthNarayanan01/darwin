@@ -1,35 +1,34 @@
-from typing import Any, Callable, Literal
+from darwin.sampling.backend import BackendType
 from darwin.sampling.backends.llamacpp import LlamaCPPBackend
 from darwin.sampling.backends.ollama import OllamaBackend
-from darwin.sampling.models import Models
+from darwin.sampling.models import ModelType
 
 
 class Sampler:
     def __init__(
         self,
-        backend: Literal["llamacpp", "groq", "ollama"],
-        model_name: Models,
-        prompt_supplement: str = "",
+        backend: BackendType,
+        model: ModelType,
         **kwargs,
     ) -> None:
         match backend:
-            case "llamacpp":
+            case BackendType.llamacpp:
                 if "model_weights_path" not in kwargs:
                     raise ValueError(
                         "Using LlamaCPPBackend but no model weights were given. Please supply the model_weights_path keyword argument"
                     )
                 self.backend = LlamaCPPBackend(
                     model_weights_path=kwargs["model_weights_path"],
-                    model_name=model_name,
+                    model_name=model,
                 )
-            case "ollama":
+            case BackendType.ollama:
                 if "ollama_server_address" not in kwargs:
                     raise ValueError(
                         "Using OllamaBackend but not server address was given. Please supply the ollama_server_address keyword argument"
                     )
                 self.backend = OllamaBackend(
                     server_address=kwargs["ollama_server_address"],
-                    model_name=model_name,
+                    model=model,
                 )
             case "groq":
                 raise NotImplementedError()
@@ -37,7 +36,9 @@ class Sampler:
                 raise ValueError(
                     "Backend must be one of ['llamacpp', 'groq', 'ollama']"
                 )
-        self.prompt_supplement = prompt_supplement
+        self.prompt_supplement = (
+            kwargs["prompt_supplement"] if "prompt_supplement" in kwargs else ""
+        )
 
-    def sample(self, prompt: str) -> str:
-        return self.backend.prompt(f"{self.prompt_supplement}\n\n{prompt}")
+    async def sample(self, prompt: str) -> str:
+        return await self.backend.prompt(f"{self.prompt_supplement}\n\n{prompt}")
