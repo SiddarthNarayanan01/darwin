@@ -1,5 +1,5 @@
 from darwin.evolving.evolver import Evolver
-from darwin.configuration.configuration import EvolverConfig
+from darwin.configuration import EvolverConfig
 
 
 def main():

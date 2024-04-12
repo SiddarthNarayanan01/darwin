@@ -11,10 +11,12 @@ class Island:
         max_version: int,
         cluster_temperature: float,
         cluster_temperature_period: int,
+        examples_per_prompt: int,
     ) -> None:
         self.max_version = max_version
         self.cluster_temperature = cluster_temperature
         self.cluster_temperature_period = cluster_temperature_period
+        self.examples_per_prompt = examples_per_prompt
 
         # Right now clusters are just indexed with one score, but we could indexx them
         # using a tuple of all the scores on all inputs.
@@ -30,19 +32,19 @@ class Island:
 
         self.num_programs += 1
 
-    def get_sample(self) -> tuple[Sample, int]:
-        scores = np.array(list(self.clusters.keys()))
+    def get_samples(self) -> list[Sample]:
+        keys = np.array(list(self.clusters.keys()))
         temperature = self.cluster_temperature * (
             1
             - (self.num_programs % self.cluster_temperature_period)
             / self.cluster_temperature_period
         )
-        p = softmax(scores / temperature)
+        p = softmax(keys / temperature)
 
-        versions = min(len(self.clusters), self.max_version)
+        n_examples = min(len(self.clusters), self.examples_per_prompt)
 
-        scores = np.random.choice(scores, size=versions, p=p)
-        scores = np.sort(scores)
+        keys = np.random.choice(keys, size=n_examples, p=p)
+        keys = np.sort(keys)
 
-        implementations = [self.clusters[score].get_sample() for score in scores]
-        return implementations[-1], len(implementations)
+        implementations = [self.clusters[key].get_sample() for key in keys]
+        return implementations

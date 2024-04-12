@@ -1,7 +1,6 @@
 import json
 import aiohttp
 
-# import json
 from darwin.sampling.backend import Backend
 from darwin.sampling.models import ModelType
 
@@ -10,6 +9,13 @@ class OllamaBackend(Backend):
     def __init__(self, server_address: str, model: ModelType) -> None:
         super().__init__()
         self.server_address = server_address
+        match model:
+            case ModelType.dsc67:
+                self.model = "deepseek-coder:6.7b"
+            case ModelType.dsmath:
+                self.model = "t1c/deepseek-math-7b-rl:latest"
+            case ModelType.gemma:
+                self.model = "gemma"
         self.model = model.value
 
     async def prompt(self, prompt: str) -> str:
@@ -30,3 +36,5 @@ class OllamaBackend(Backend):
                 response = await response.json()
                 result = response["response"]
                 return result
+
+# TODO: make more efficient by not creating session one very request

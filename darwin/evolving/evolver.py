@@ -1,24 +1,27 @@
 import time
 import numpy as np
 from scipy.special import softmax
+import random
 
 from darwin.evolving.islands import Island
 from darwin.evolving.samples import Sample
 
 # All the config stuff should be made in the config file
-from darwin.configuration.configuration import EvolverConfig
+from darwin.configuration import EvolverConfig
 
 
 class Evolver:
     def __init__(self, config: EvolverConfig) -> None:
         self.config: EvolverConfig = config
         self.islands: list[Island] = []
+        self.active_islands_ids: set[int] = set()
         for _ in range(self.config.num_islands):
             self.islands.append(
                 Island(
                     self.config.max_versions,
                     self.config.init_temperature,
                     self.config.temperature_period,
+                    self.config.examples_per_prompt,
                 )
             )
 
@@ -28,11 +31,17 @@ class Evolver:
         self.last_reset = time.time()
         self.migration_counter_per_island: list[int] = [0] * config.num_islands
 
-    def get_sample(self) -> tuple[Sample, int]:
-        island_id = np.random.randint(self.config.num_islands)
-        chosen: tuple[Sample, int] = self.islands[island_id].get_sample()
-        return chosen
+    def populate_islands(self, function: str):
+        for i in range(self.config.num_islands):
+            self.register_sample(Sample(function), [0], i)
 
+    def get_samples(self) -> list[Sample]:
+        island_id = random.choice(list(self.active_islands_ids))
+        samples = self.islands[island_id].get_samples()
+        return samples
+
+    # TODO: create alternative register_sample function that registers function
+    # into random island
     def register_sample(
         self,
         sample: Sample,
@@ -45,6 +54,7 @@ class Evolver:
         score = scores[-1]
 
         self.islands[island_id].register_sample(sample)
+        self.active_islands_ids.add(island_id)
 
         # I do this to decide whether to change the worst/best score on the island easily if necessary
         if score > self.best_sample_per_island[island_id].score:
@@ -75,10 +85,12 @@ class Evolver:
         reset_islands = sorted_island_indices[:num_islands_to_reset]
 
         for idx in reset_islands:
+            self.active_islands_ids.remove(idx)
             self.islands[idx] = Island(
                 self.config.max_versions,
                 self.config.init_temperature,
                 self.config.temperature_period,
+                self.config.examples_per_prompt,
             )
             self.best_sample_per_island[idx] = None
             self.worst_sample_per_island[idx] = None

@@ -1,4 +1,5 @@
 from darwin.sampling.backend import BackendType
+from darwin.sampling.backends.groq import GroqBackend
 from darwin.sampling.backends.llamacpp import LlamaCPPBackend
 from darwin.sampling.backends.ollama import OllamaBackend
 from darwin.sampling.models import ModelType
@@ -19,7 +20,7 @@ class Sampler:
                     )
                 self.backend = LlamaCPPBackend(
                     model_weights_path=kwargs["model_weights_path"],
-                    model_name=model,
+                    model=model,
                 )
             case BackendType.ollama:
                 if "ollama_server_address" not in kwargs:
@@ -30,8 +31,8 @@ class Sampler:
                     server_address=kwargs["ollama_server_address"],
                     model=model,
                 )
-            case "groq":
-                raise NotImplementedError()
+            case BackendType.groq:
+                self.backend = GroqBackend(model)
             case _:
                 raise ValueError(
                     "Backend must be one of ['llamacpp', 'groq', 'ollama']"

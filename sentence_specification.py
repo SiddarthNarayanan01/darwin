@@ -77,11 +77,13 @@ def solve(t: int, b: int, k: int) -> np.ndarray:
     return sentence
 
 
+# darwin.eval
 def evaluate(t: int, b: int, k: int) -> int:
     sentence = solve(t, b, k)
     return np.size(sentence, axis=0)
 
 
+# darwin.evolve
 def priority(word: tuple[int, ...], t: int) -> float:
     """Returns the priority in which we want to add a word to the sentence"""
     return 0.0

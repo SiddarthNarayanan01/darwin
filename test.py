@@ -8,9 +8,8 @@ def init_server(server_addr, server_port):
     server = SamplerServer(
         host=server_addr,
         port=server_port,
-        backend=BackendType.llamacpp,
-        model=ModelType.dsc67,
-        model_weights_path="./model_weights/deepseek-math-7b-rl.Q8_0.gguf"
+        backend=BackendType.groq,
+        model=ModelType.gemma,
     )
     server.start_server()
 

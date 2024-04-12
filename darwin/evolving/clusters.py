@@ -8,11 +8,11 @@ class Cluster:
     def __init__(self, sample: Sample) -> None:
         self.score: int = sample.score
         self.samples: list[Sample] = [sample]
-        self.lengths: list[int] = [len(sample.program)]
+        self.lengths: list[int] = [len(sample.code)]
 
     def register_sample(self, sample: Sample) -> None:
         self.samples.append(sample)
-        self.lengths.append(len(sample.program))
+        self.lengths.append(len(sample.code))
 
     def get_sample(self) -> Sample:
         normalized = (np.array(self.lengths) - min(self.lengths)) / (

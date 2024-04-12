@@ -8,9 +8,8 @@ class Corrector(Sampler):
     def __init__(self, backend: BackendType, model_name: ModelType, **kwargs) -> None:
         if "prompt_supplement" not in kwargs:
             self.prompt_supplement = """Correct any syntax errors that are present in this code.
-            Do NOT change the intent/underlying workings of the code. Simply fix syntactical issues and/or issues with numpy, itertools,
-            and any other imported library, that may have been made. Once you are done fixing the code, simply output the fixed Python 
-            function in markdown format. Use a markdown code block to separate the revised function from any explanations or commentary that you provide."""
+            Do NOT change the intent/underlying workings of the code. Simply fix syntactical issues 
+            and output the raw function. Surround the function with a markdown code block."""
             kwargs["prompt_supplement"] = self.prompt_supplement
         super().__init__(backend, model_name, **kwargs)
 
