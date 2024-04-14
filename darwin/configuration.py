@@ -109,3 +109,9 @@ class DarwinConfig:
         self.postprocess = postprocess_config or PostProcessConfig()
         self.eval = evaluation_config or EvaluationConfig()
         self.evolve = evolve_config or EvolverConfig()
+
+
+class ParseConfig:
+    def __init__(self, evolved_function_name: str, solver_function_name: str):
+        self.evolved_function_name = evolved_function_name
+        self.solver_function_name = solver_function_name
