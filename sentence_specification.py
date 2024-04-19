@@ -77,32 +77,11 @@ def solve(t: int, b: int, k: int) -> np.ndarray:
     return sentence
 
 
-# darwin.eval
 def evaluate(t: int, b: int, k: int) -> int:
     sentence = solve(t, b, k)
     return np.size(sentence, axis=0)
 
 
-# darwin.evolve
 def priority(word: tuple[int, ...], t: int) -> float:
     """Returns the priority in which we want to add a word to the sentence"""
     return 0.0
-
-
-if __name__ == "__main__":
-    """DON'T FORGET TO PUT @funsearch.run and @funsearch.evolve decorators!"""
-    print(evaluate(4, 3, 3))
-    sent = np.array(
-        [
-            [0, 0, 1, 2],
-            [0, 1, 2, 0],
-            [0, 2, 0, 1],
-            [1, 2, 1, 0],
-            [1, 1, 0, 2],
-            [1, 0, 2, 1],
-            [2, 0, 0, 0],
-            [2, 1, 1, 1],
-            [2, 2, 2, 2],
-        ]
-    )
-    print(check_valid_combination(sent, 4, 3))

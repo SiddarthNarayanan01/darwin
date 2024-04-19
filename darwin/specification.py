@@ -1,14 +1,9 @@
 import ast
+from darwin.configuration import SpecParseConfig
 
-from darwin.configuration import ParseConfig
 
-
-def parse_spec(file_name: str, config: ParseConfig) -> tuple[str]:
-    contents = ""
-    with open(file_name, "r") as f:
-        contents = f.read()
-
-    tree = ast.parse(contents)
+def parse_spec(spec: str, config: SpecParseConfig) -> tuple[str, str]:
+    tree = ast.parse(spec)
 
     evolved_function = ""
     solve_function = ""

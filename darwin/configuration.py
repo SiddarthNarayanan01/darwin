@@ -54,9 +54,9 @@ class SampleConfig:
         self.model_distribution = model_distribution
         self.backend = backend
         if backend == BackendType.ollama:
-            if "ollama_server_addr" not in kwargs:
+            if "ollama_server_address" not in kwargs:
                 raise ValueError(
-                    "Ollama backend provided but no ollama_server_addr found. Please specify the ollama_server_addr (e.g., http://localhost:11434)"
+                    "Ollama backend provided but no ollama_server_address found. Please specify the ollama_server_address (e.g., http://localhost:11434)"
                 )
         self.n_samplers = n_samplers
 
@@ -97,21 +97,23 @@ class EvaluationConfig:
         self.sandbox = sanbox
 
 
+class SpecParseConfig:
+    def __init__(self, evolved_function_name: str, solver_function_name: str):
+        self.evolved_function_name = evolved_function_name
+        self.solver_function_name = solver_function_name
+
+
 class DarwinConfig:
     def __init__(
         self,
         sample_config: SampleConfig,
+        spec_parse_config: SpecParseConfig,
         postprocess_config: PostProcessConfig | None = None,
         evaluation_config: EvaluationConfig | None = None,
         evolve_config: EvolverConfig | None = None,
     ) -> None:
+        self.parse = spec_parse_config
         self.sample = sample_config
         self.postprocess = postprocess_config or PostProcessConfig()
         self.eval = evaluation_config or EvaluationConfig()
         self.evolve = evolve_config or EvolverConfig()
-
-
-class ParseConfig:
-    def __init__(self, evolved_function_name: str, solver_function_name: str):
-        self.evolved_function_name = evolved_function_name
-        self.solver_function_name = solver_function_name

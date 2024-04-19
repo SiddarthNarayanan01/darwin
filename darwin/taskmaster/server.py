@@ -127,10 +127,11 @@ class PostProcessorServer(Server):
 
 
 class EvaluationServer(Server):
-    def __init__(self, host: str, port: int) -> None:
+    def __init__(self, host: str, port: int, eval_function: str) -> None:
         super().__init__(host, port)
         self.app.add_routes([web.post("/evaluate", self.evaluate)])
         self.evaluator = Evaluator()
+        self.eval_function = eval_function
 
     async def evaluate(self, request: web.Request):
         request = await request.json()
@@ -139,14 +140,13 @@ class EvaluationServer(Server):
             or "code" not in request
             or "island_id" not in request
             or "inputs" not in request
-            or "eval_function" not in request
         ):
             return web.Response(
-                text="Missing one or more of ['specification', 'code', 'island_id', 'inputs', 'eval_function']",
+                text="Missing one or more of ['specification', 'code', 'island_id', 'inputs']",
                 status=400,
             )
         score = await self.evaluator.eval(
-            request["code"], request["inputs"], request["eval_function"]
+            request["code"], request["inputs"], self.eval_function
         )
         return web.json_response(
             data={

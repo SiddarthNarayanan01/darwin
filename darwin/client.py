@@ -1,24 +1,25 @@
 from collections import deque
 from math import floor
+from multiprocessing import Process
 from typing import List, Tuple
 
 import aiohttp
-from multiprocessing import Process
 from darwin.configuration import DarwinConfig
+from darwin.specification import parse_spec
 from darwin.taskmaster.server import (
     EvaluationServer,
     EvolverServer,
     PostProcessorServer,
     SamplerServer,
+    Server,
 )
-from darwin.taskmaster.server import Server
 
 
 class DarwinClient:
-    def __init__(self, spec: str, base_function: str, config: DarwinConfig) -> None:
+    def __init__(self, spec: str, config: DarwinConfig) -> None:
+        self.evolve_function, self.solve_function = parse_spec(spec, config.parse)
         self.spec = spec
         self.config = config
-        self.base_function = base_function
         self.task_queue = deque()
         self.session = aiohttp.ClientSession()
         self.samplers: List[Tuple[str, int]] = []
@@ -33,7 +34,7 @@ class DarwinClient:
         self.spawn_postprocessors()
         # Create evaluators
         for i in range(self.config.eval.n_evaluators):
-            s = EvaluationServer("127.0.0.1", 14232 + i)
+            s = EvaluationServer("127.0.0.1", 14232 + i, self.solve_function)
             self.evaluators.append(("127.0.0.1", 14232 + i))
             self.start_server(s)
 
@@ -42,6 +43,7 @@ class DarwinClient:
             "127.0.0.1",
             11111,
             self.config.evolve,
+            self.evolve_function
         )
 
     def spawn_samplers(self):
@@ -66,7 +68,7 @@ class DarwinClient:
                     9147 + i,
                     verify_only=True,
                 )
-                self.postprocessors.append(("127.0.0.1", 7135 + i))
+                self.postprocessors.append(("127.0.0.1", 9147 + i))
             return
 
         md = self.config.postprocess.model_distribution

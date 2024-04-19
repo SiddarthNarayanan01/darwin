@@ -25,7 +25,7 @@ class Sampler:
             case BackendType.ollama:
                 if "ollama_server_address" not in kwargs:
                     raise ValueError(
-                        "Using OllamaBackend but not server address was given. Please supply the ollama_server_address keyword argument"
+                        "Using OllamaBackend but no server address was given. Please supply the ollama_server_address keyword argument"
                     )
                 self.backend = OllamaBackend(
                     server_address=kwargs["ollama_server_address"],
