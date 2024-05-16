@@ -8,7 +8,7 @@ from typing import Any, Deque, Dict, List, Tuple
 
 import numpy as np
 import requests
-from darwin2.client.logger import Logger
+from darwin2.client.logger_v2 import Logger
 from darwin2.configuration.ollama import OllamaConfig
 from darwin2.evolving.samples import Sample
 from darwin2.evaluating.evaluator import Evaluator
