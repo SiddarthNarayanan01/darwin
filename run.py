@@ -1,3 +1,4 @@
+import os
 from darwin2.client.ollama import OllamaClient
 from darwin2.configuration.ollama import OllamaConfig
 
@@ -22,5 +23,5 @@ if __name__ == "__main__":
         evolve_function_name="priority",
         solve_function_name="evaluate",
         inputs=(5, 5, 16),
-        log_base_path=".",
+        log_base_path=os.environ["BASE_LOG_PATH"],
     )
