@@ -1,5 +1,5 @@
 import ast
-from multiprocessing import Queue
+from multiprocessing.queues import Queue
 from typing import Tuple, Any
 
 from darwin2.evolving.samples import Sample

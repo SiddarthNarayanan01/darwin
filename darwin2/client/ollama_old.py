@@ -98,23 +98,8 @@ class OllamaClient:
             if samples_queue:
                 sample = samples_queue.popleft()
                 sample.code = RegExParser.parse(sample.code)
-                self.log.log_misc("Received sample") 
-                # Must send to evaluators instead
-                self.evaluators.submit(
-                    self.evaluator.eval,
-                    scores_queue,
-                    spec,
-                    sample,
-                    inputs,
-                    solve_function_name,
-                    evolve_function_name,
-                )
-                n_sample_tasks -= 1
-
-            if not scores_queue.empty():
-                sample = scores_queue.get()
-                self.log.log_misc("Scored sample")
-                if sample.score == 0 and self.config.n_correctors > 0 and self.config.correctors:
+                self.log.log_misc("Received sample")
+                if self.config.n_correctors > 0 and self.config.correctors:
                     self.correctors.submit(
                         self.__correct_sample,
                         corrections_queue,
@@ -122,10 +107,18 @@ class OllamaClient:
                         sample,
                         self.__yield_weighted_model_name(self.config.correctors),
                     )
-                elif sample.score != 0:
-                    self.log.scored_sample(sample)
-                    self.evolver.register_sample(sample, [sample.score])
-
+                else:
+                    # Must send to evaluators instead
+                    self.evaluators.submit(
+                        self.evaluator.eval,
+                        scores_queue,
+                        spec,
+                        sample,
+                        inputs,
+                        solve_function_name,
+                        evolve_function_name,
+                    )
+                n_sample_tasks -= 1
 
             if corrections_queue:
                 correction = corrections_queue.popleft()
@@ -140,6 +133,13 @@ class OllamaClient:
                     solve_function_name,
                     evolve_function_name,
                 )
+
+            if not scores_queue.empty():
+                sample = scores_queue.get()
+                self.log.log_misc("Scored sample")
+                # self.log.score(sample.score)
+                self.log.scored_sample(sample)
+                self.evolver.register_sample(sample, [sample.score])
 
             time.sleep(0.01)
 
