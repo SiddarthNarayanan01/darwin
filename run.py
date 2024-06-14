@@ -1,5 +1,5 @@
 import os
-from darwin2.client.groqeval import GroqClient
+from darwin2.client.ollama import OllamaClient
 from darwin2.configuration.ollama import OllamaConfig
 
 config = OllamaConfig(
@@ -9,7 +9,7 @@ config = OllamaConfig(
 )
 
 # To access endpoint on different computer, make sure to specify OLLAMA_HOST=IP:PORT
-client = GroqClient(
+client = OllamaClient(
     endpoints=["http://localhost:11434/api/generate"],
     config=config,
     database_save="logs/database.pickle",

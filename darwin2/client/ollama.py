@@ -1,5 +1,6 @@
 import ast
 import json
+import pickle
 import time
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
@@ -8,11 +9,12 @@ from typing import Any, Deque, Dict, List, Tuple
 
 import numpy as np
 import requests
+
 from darwin2.client.logger_v2 import Logger
 from darwin2.configuration.ollama import OllamaConfig
-from darwin2.evolving.samples import Sample
 from darwin2.evaluating.evaluator import Evaluator
 from darwin2.evolving.evolver import Evolver
+from darwin2.evolving.samples import Sample
 from darwin2.postprocessing.parser import RegExParser
 
 
@@ -22,12 +24,18 @@ class OllamaClient:
         endpoints: List[str],
         config: OllamaConfig,
         corrector_endpoints: List[str] | None = None,
+        database_save: str | None = None,
     ) -> None:
         self.endpoints = endpoints
         self.corrector_endpoints = corrector_endpoints or endpoints
         self.config = config
         self.evaluator = Evaluator()
-        self.evolver = Evolver(config.evolve_config)
+
+        if database_save:
+            with open(database_save, "rb") as f:
+                self.evolver = pickle.load(f)
+        else:
+            self.evolver = Evolver(config.evolve_config)
 
     def start(
         self,
@@ -83,68 +91,73 @@ class OllamaClient:
         # Start infinite evolution loop
         self.log.log_misc("Starting evolution loop")
         n_sample_tasks = 0
-        while True:
-            if n_sample_tasks < 100:
-                sample = self.__get_prompt_and_island_id()
-                self.samplers.submit(
-                    self.__sample,
-                    samples_queue,
-                    np.random.choice(self.endpoints, 1)[0],
-                    sample,
-                    self.__yield_weighted_model_name(self.config.samplers),
-                )
-
-            # Pass sample to correctors if needed
-            if samples_queue:
-                sample = samples_queue.popleft()
-                sample.code = RegExParser.parse(sample.code)
-                self.log.log_misc("Received sample")
-                # Must send to evaluators instead
-                self.evaluators.submit(
-                    self.evaluator.eval,
-                    scores_queue,
-                    spec,
-                    sample,
-                    inputs,
-                    solve_function_name,
-                    evolve_function_name,
-                )
-                n_sample_tasks -= 1
-
-            if not scores_queue.empty():
-                sample = scores_queue.get()
-                self.log.log_misc("Scored sample")
-                if (
-                    sample.score == 0
-                    and self.config.n_correctors > 0
-                    and self.config.correctors
-                ):
-                    self.correctors.submit(
-                        self.__correct_sample,
-                        corrections_queue,
-                        np.random.choice(self.corrector_endpoints, 1)[0],
+        try:
+            while True:
+                if n_sample_tasks < 100:
+                    sample = self.__get_prompt_and_island_id()
+                    self.samplers.submit(
+                        self.__sample,
+                        samples_queue,
+                        np.random.choice(self.endpoints, 1)[0],
                         sample,
-                        self.__yield_weighted_model_name(self.config.correctors),
+                        self.__yield_weighted_model_name(self.config.samplers),
                     )
-                elif sample.score != 0:
-                    self.log.scored_sample(sample)
-                    self.evolver.register_sample(sample, [sample.score])
 
-            if corrections_queue:
-                correction = corrections_queue.popleft()
-                self.log.log_misc("Received corrected sample")
-                self.log.log_sample(correction)
-                self.evaluators.submit(
-                    self.evaluator.eval,
-                    scores_queue,
-                    spec,
-                    correction,
-                    inputs,
-                    solve_function_name,
-                    evolve_function_name,
-                )
+                # Pass sample to correctors if needed
+                if samples_queue:
+                    sample = samples_queue.popleft()
+                    sample.code = RegExParser.parse(sample.code)
+                    self.log.log_misc("Received sample")
+                    # Must send to evaluators instead
+                    self.evaluators.submit(
+                        self.evaluator.eval,
+                        scores_queue,
+                        spec,
+                        sample,
+                        inputs,
+                        solve_function_name,
+                        evolve_function_name,
+                    )
+                    n_sample_tasks -= 1
 
-            time.sleep(0.01)
+                if not scores_queue.empty():
+                    sample = scores_queue.get()
+                    self.log.log_misc("Scored sample")
+                    if (
+                        sample.score == 0
+                        and self.config.n_correctors > 0
+                        and self.config.correctors
+                    ):
+                        self.correctors.submit(
+                            self.__correct_sample,
+                            corrections_queue,
+                            np.random.choice(self.corrector_endpoints, 1)[0],
+                            sample,
+                            self.__yield_weighted_model_name(self.config.correctors),
+                        )
+                    elif sample.score != 0:
+                        self.log.scored_sample(sample)
+                        self.evolver.register_sample(sample, [sample.score])
+
+                if corrections_queue:
+                    correction = corrections_queue.popleft()
+                    self.log.log_misc("Received corrected sample")
+                    self.log.log_sample(correction)
+                    self.evaluators.submit(
+                        self.evaluator.eval,
+                        scores_queue,
+                        spec,
+                        correction,
+                        inputs,
+                        solve_function_name,
+                        evolve_function_name,
+                    )
+
+                time.sleep(0.01)
+        except KeyboardInterrupt:
+            self.evolver.save_database()
+            self.log.log_misc("KeyboardInterrupt")
+            exit()
 
     def __yield_weighted_model_name(self, model_distribution: Dict[str, float]) -> str:
         return np.random.choice(

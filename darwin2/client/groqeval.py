@@ -158,7 +158,7 @@ class GroqClient:
                     )
 
                 time.sleep(0.01)
-        except KeyboardInterrupt as e:
+        except KeyboardInterrupt:
             self.evolver.save_database()
             self.log.log_misc("KeyboardInterrupt")
             exit()
