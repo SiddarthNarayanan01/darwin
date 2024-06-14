@@ -3,6 +3,7 @@ import time
 import numpy as np
 from scipy.special import softmax
 import random
+import pickle
 
 from darwin2.evolving.islands import Island
 from darwin2.evolving.samples import Sample
@@ -57,10 +58,16 @@ class Evolver:
         self.active_islands_ids.add(sample.island_id)
 
         # I do this to decide whether to change the worst/best score on the island easily if necessary
-        if self.best_sample_per_island[sample.island_id] is None or score > self.best_sample_per_island[sample.island_id].score:
+        if (
+            self.best_sample_per_island[sample.island_id] is None
+            or score > self.best_sample_per_island[sample.island_id].score  # type: ignore
+        ):
             self.best_sample_per_island[sample.island_id] = sample
             self.migration_counter_per_island[sample.island_id] = 0
-        elif self.worst_sample_per_island[sample.island_id] is None or score < self.worst_sample_per_island[sample.island_id].score:
+        elif (
+            self.worst_sample_per_island[sample.island_id] is None
+            or score < self.worst_sample_per_island[sample.island_id].score  # type: ignore
+        ):
             self.worst_sample_per_island[sample.island_id] = sample
             self.migration_counter_per_island[sample.island_id] += 1
         else:
@@ -70,6 +77,7 @@ class Evolver:
             self.migration_counter_per_island[sample.island_id]
             >= self.config.migration_rate
         ):
+            self.migration_counter_per_island[sample.island_id] = 0
             self.migrate_islands(sample.island_id)
 
         if time.time() - self.last_reset > self.config.reset_period:
@@ -99,7 +107,9 @@ class Evolver:
             self.worst_sample_per_island[idx] = None
             founder_id = np.random.choice(kept_islands)
             founder = self.best_sample_per_island[founder_id]
-            self.register_sample(Sample(founder.code, idx, founder.score), [founder.score])
+            self.register_sample(
+                Sample(founder.code, idx, founder.score), [founder.score]
+            )
 
     def migrate_islands(self, from_island_id) -> None:
         """Migrating the worst member of an island to a different island"""
@@ -111,3 +121,7 @@ class Evolver:
         )
         self.migration_counter_per_island[from_island_id] = 0
         # delete from original island?
+
+    def save_database(self):
+        with open("logs/database.pickle", "wb") as f:
+            pickle.dump(self, f)

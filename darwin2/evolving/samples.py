@@ -3,3 +3,6 @@ class Sample:
         self.score = score
         self.island_id = island_id
         self.code = code
+
+    def __repr__(self) -> str:
+        return f"Island {self.island_id} with score: {self.score}"

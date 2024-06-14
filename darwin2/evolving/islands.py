@@ -42,6 +42,8 @@ class Island:
             / self.cluster_temperature_period
         )
         p = softmax(keys / temperature)
+        with open("logs/probs.txt", "a") as f:
+            f.write(f"Keys: {keys}\nProb: {p}\n")
 
         n_examples = min(len(self.clusters), self.examples_per_prompt)
         keys = np.random.choice(keys, size=n_examples, p=p)

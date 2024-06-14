@@ -29,7 +29,7 @@ class Evaluator:
             score = eval(f"{function}{inputs}", global_dict)
             scores_queue.put(Sample(sample.code, sample.island_id, score), block=False)
         except Exception as e:
-            print(e)
+            # print(e)
             scores_queue.put(Sample(sample.code, sample.island_id, 0), block=False)
 
     def __rename_function(self, sample: str, base_function_name: str):
