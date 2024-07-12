@@ -1,6 +1,7 @@
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import Manager, Queue
 
+
 def add(queue):
     sum = 0
     for i in range(int(1e8)):
@@ -13,7 +14,7 @@ if __name__ == "__main__":
     queue = Manager().Queue()
 
     for i in range(10):
-        pool.submit(add,queue)
+        pool.submit(add, queue)
 
     count = 10
     while count:
