@@ -1,5 +1,6 @@
 from typing import Tuple
 import time
+
 import numpy as np
 from scipy.special import softmax
 import random
@@ -115,9 +116,11 @@ class Evolver:
         """Migrating the worst member of an island to a different island"""
         best = np.array([i.score for i in self.best_sample_per_island])
         to_island_id = np.random.choice(self.islands, 1, p=softmax(-best))
+        sample = self.worst_sample_per_island[from_island_id]
+        sample.island_id = to_island_id
         self.register_sample(
-            self.worst_sample_per_island[from_island_id],
-            [self.worst_sample_per_island[from_island_id].score],
+            sample,
+            [sample.score],
         )
         self.migration_counter_per_island[from_island_id] = 0
         # delete from original island?
